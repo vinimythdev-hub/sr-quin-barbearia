@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@barbearia/shared": "workspace:*",
+    "@expo/vector-icons": "^15.1.1",
     "@supabase/supabase-js": "^2.39.0",
     "expo": "~56.0.4",
     "expo-secure-store": "~56.0.4",
