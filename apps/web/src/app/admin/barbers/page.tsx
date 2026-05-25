@@ -38,9 +38,20 @@ export default function BarbersPage() {
     is_working: boolean;
     start_time: string;
     end_time: string;
+    lunch_start: string;
+    lunch_end: string;
   }[]>([]);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
+
+  // Estados para edição cadastral de barbeiro
+  const [selectedBarberForEdit, setSelectedBarberForEdit] = useState<BarberItem | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editBarberName, setEditBarberName] = useState("");
+  const [editBarberBio, setEditBarberBio] = useState("");
+  const [editBarberCommission, setEditBarberCommission] = useState("");
+  const [editBarberAvatarUrl, setEditBarberAvatarUrl] = useState("");
+  const [editBarberErrorMessage, setEditBarberErrorMessage] = useState<string | null>(null);
 
   // Buscar barbeiros do Supabase
   const fetchBarbers = async () => {
@@ -168,6 +179,8 @@ export default function BarbersPage() {
           is_working: !!dbRecord,
           start_time: dbRecord?.start_time ? dbRecord.start_time.substring(0, 5) : "08:00",
           end_time: dbRecord?.end_time ? dbRecord.end_time.substring(0, 5) : "18:00",
+          lunch_start: dbRecord?.lunch_start ? dbRecord.lunch_start.substring(0, 5) : "12:00",
+          lunch_end: dbRecord?.lunch_end ? dbRecord.lunch_end.substring(0, 5) : "13:00",
         };
       });
 
@@ -184,6 +197,29 @@ export default function BarbersPage() {
     if (!selectedBarberForHours) return;
     setModalLoading(true);
     setModalError(null);
+
+    // Validação local de horários de almoço
+    for (const h of modalHours) {
+      if (h.is_working) {
+        if (h.lunch_start || h.lunch_end) {
+          if (!h.lunch_start || !h.lunch_end) {
+            setModalError(`Para dias de expediente ativo, configure o início e fim do almoço.`);
+            setModalLoading(false);
+            return;
+          }
+          if (h.lunch_start >= h.lunch_end) {
+            setModalError(`O início do almoço deve ser anterior ao fim.`);
+            setModalLoading(false);
+            return;
+          }
+          if (h.lunch_start < h.start_time || h.lunch_end > h.end_time) {
+            setModalError(`O almoço deve estar dentro do expediente de trabalho (${h.start_time} às ${h.end_time}).`);
+            setModalLoading(false);
+            return;
+          }
+        }
+      }
+    }
 
     try {
       // 1. Deleta todas as horas de trabalho atuais do barbeiro
@@ -202,6 +238,8 @@ export default function BarbersPage() {
           day_of_week: h.day_of_week,
           start_time: `${h.start_time}:00`,
           end_time: `${h.end_time}:00`,
+          lunch_start: h.lunch_start ? `${h.lunch_start}:00` : null,
+          lunch_end: h.lunch_end ? `${h.lunch_end}:00` : null,
         }));
 
       if (hoursToInsert.length > 0) {
@@ -219,6 +257,52 @@ export default function BarbersPage() {
       console.error(err);
     } finally {
       setModalLoading(false);
+    }
+  };
+
+  const handleOpenEditBarberModal = (barber: BarberItem) => {
+    setSelectedBarberForEdit(barber);
+    setEditBarberName(barber.name);
+    setEditBarberBio(barber.bio || "");
+    setEditBarberCommission(String(barber.commission_rate));
+    setEditBarberAvatarUrl(barber.avatar_url || "");
+    setEditBarberErrorMessage(null);
+    setShowEditForm(true);
+  };
+
+  const handleEditBarber = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBarberForEdit) return;
+    setSubmitLoading(true);
+    setEditBarberErrorMessage(null);
+
+    const commRate = parseFloat(editBarberCommission);
+
+    if (isNaN(commRate) || commRate < 0 || commRate > 1) {
+      setEditBarberErrorMessage("Por favor, insira uma taxa de comissão válida como decimal entre 0.00 e 1.00 (ex: 0.50 para 50%).");
+      setSubmitLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await (supabase.from("barbers") as any)
+        .update({
+          name: editBarberName,
+          bio: editBarberBio || null,
+          commission_rate: commRate,
+          avatar_url: editBarberAvatarUrl || null,
+        })
+        .eq("id", selectedBarberForEdit.id);
+
+      if (error) throw error;
+
+      setShowEditForm(false);
+      setSelectedBarberForEdit(null);
+      await fetchBarbers();
+    } catch (err: any) {
+      setEditBarberErrorMessage(err.message || "Erro ao editar barbeiro.");
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
@@ -353,22 +437,35 @@ export default function BarbersPage() {
                 }`}
               >
                 {/* Header do Barbeiro */}
-                <div className="flex gap-4 items-center">
-                  <div className="w-14 h-14 rounded-full border border-[#d4af37]/30 bg-[#0a0a0c] overflow-hidden flex items-center justify-center">
-                    {barber.avatar_url ? (
-                      <img src={barber.avatar_url} alt={barber.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="font-display text-xl font-bold text-[#d4af37]">
-                        {barber.name.substring(0, 2).toUpperCase()}
+                <div className="flex justify-between items-start">
+                  <div className="flex gap-4 items-center">
+                    <div className="w-14 h-14 rounded-full border border-[#d4af37]/30 bg-[#0a0a0c] overflow-hidden flex items-center justify-center">
+                      {barber.avatar_url ? (
+                        <img src={barber.avatar_url} alt={barber.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="font-display text-xl font-bold text-[#d4af37]">
+                          {barber.name.substring(0, 2).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="font-semibold text-base text-white tracking-wide">{barber.name}</h3>
+                      <span className="text-[10px] text-[#d4af37] font-mono tracking-wider font-semibold">
+                        Comissão: {(barber.commission_rate * 100).toFixed(0)}%
                       </span>
-                    )}
+                    </div>
                   </div>
-                  <div className="space-y-1">
-                    <h3 className="font-semibold text-base text-white tracking-wide">{barber.name}</h3>
-                    <span className="text-[10px] text-[#d4af37] font-mono tracking-wider font-semibold">
-                      Comissão: {(barber.commission_rate * 100).toFixed(0)}%
-                    </span>
-                  </div>
+                  
+                  <button
+                    onClick={() => handleOpenEditBarberModal(barber)}
+                    className="text-slate-400 hover:text-[#d4af37] transition p-1"
+                    title="Editar Cadastro"
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                  </button>
                 </div>
 
                 {/* Biografia */}
@@ -472,32 +569,68 @@ export default function BarbersPage() {
                         </label>
 
                         {h.is_working ? (
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="time"
-                              required
-                              value={h.start_time}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setModalHours(prev =>
-                                  prev.map(item => item.day_of_week === h.day_of_week ? { ...item, start_time: val } : item)
-                                );
-                              }}
-                              className="bg-[#121215] border border-[#27272a]/80 focus:border-[#d4af37]/60 text-xs font-mono text-slate-200 rounded px-2 py-1 outline-none w-20"
-                            />
-                            <span className="text-[10px] text-slate-500 font-mono font-medium">às</span>
-                            <input
-                              type="time"
-                              required
-                              value={h.end_time}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                setModalHours(prev =>
-                                  prev.map(item => item.day_of_week === h.day_of_week ? { ...item, end_time: val } : item)
-                                );
-                              }}
-                              className="bg-[#121215] border border-[#27272a]/80 focus:border-[#d4af37]/60 text-xs font-mono text-slate-200 rounded px-2 py-1 outline-none w-20"
-                            />
+                          <div className="flex flex-col gap-2 w-full sm:w-auto">
+                            {/* Horário de Expediente */}
+                            <div className="flex items-center justify-between sm:justify-end gap-2">
+                              <span className="text-[10px] text-slate-400 uppercase tracking-wider font-mono sm:hidden">Expediente:</span>
+                              <div className="flex items-center gap-1.5">
+                                <input
+                                  type="time"
+                                  required
+                                  value={h.start_time}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setModalHours(prev =>
+                                      prev.map(item => item.day_of_week === h.day_of_week ? { ...item, start_time: val } : item)
+                                    );
+                                  }}
+                                  className="bg-[#121215] border border-[#27272a]/80 focus:border-[#d4af37]/60 text-xs font-mono text-slate-200 rounded px-2 py-1 outline-none w-20"
+                                />
+                                <span className="text-[10px] text-slate-500 font-mono font-medium">às</span>
+                                <input
+                                  type="time"
+                                  required
+                                  value={h.end_time}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setModalHours(prev =>
+                                      prev.map(item => item.day_of_week === h.day_of_week ? { ...item, end_time: val } : item)
+                                    );
+                                  }}
+                                  className="bg-[#121215] border border-[#27272a]/80 focus:border-[#d4af37]/60 text-xs font-mono text-slate-200 rounded px-2 py-1 outline-none w-20"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Horário de Almoço */}
+                            <div className="flex items-center justify-between sm:justify-end gap-2 border-t border-[#27272a]/40 pt-1.5 sm:border-t-0 sm:pt-0">
+                              <span className="text-[10px] text-[#d4af37]/75 uppercase tracking-wider font-mono">Almoço:</span>
+                              <div className="flex items-center gap-1.5">
+                                <input
+                                  type="time"
+                                  value={h.lunch_start || ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setModalHours(prev =>
+                                      prev.map(item => item.day_of_week === h.day_of_week ? { ...item, lunch_start: val } : item)
+                                    );
+                                  }}
+                                  className="bg-[#121215] border border-[#27272a]/80 focus:border-[#d4af37]/60 text-xs font-mono text-[#d4af37] rounded px-2 py-1 outline-none w-20"
+                                />
+                                <span className="text-[10px] text-slate-500 font-mono font-medium">às</span>
+                                <input
+                                  type="time"
+                                  value={h.lunch_end || ""}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setModalHours(prev =>
+                                      prev.map(item => item.day_of_week === h.day_of_week ? { ...item, lunch_end: val } : item)
+                                    );
+                                  }}
+                                  className="bg-[#121215] border border-[#27272a]/80 focus:border-[#d4af37]/60 text-xs font-mono text-[#d4af37] rounded px-2 py-1 outline-none w-20"
+                                />
+                              </div>
+                            </div>
                           </div>
                         ) : (
                           <span className="text-[10px] font-mono text-slate-600 uppercase tracking-widest font-semibold py-1">Folga</span>
@@ -526,6 +659,107 @@ export default function BarbersPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Edição de Cadastro do Barbeiro */}
+      {showEditForm && selectedBarberForEdit && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-fade-in overflow-y-auto">
+          <div className="bg-[#121215] border border-[#d4af37]/30 rounded-xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            <div className="flex justify-between items-center border-b border-[#27272a]/60 pb-4">
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-[#d4af37] font-bold">AJUSTE DE CADASTRO</span>
+                <h3 className="text-lg font-semibold text-white tracking-wide mt-1">Editar {selectedBarberForEdit.name}</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowEditForm(false);
+                  setSelectedBarberForEdit(null);
+                }}
+                className="text-slate-400 hover:text-white transition"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {editBarberErrorMessage && (
+              <div className="p-3.5 bg-red-950/20 border border-red-500/35 rounded-lg text-red-400 text-xs">
+                ⚠️ {editBarberErrorMessage}
+              </div>
+            )}
+
+            <form onSubmit={handleEditBarber} className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-xs uppercase tracking-wider text-[#a1a1aa] font-medium">Nome do Barbeiro</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ex: Carlos Oliveira"
+                    value={editBarberName}
+                    onChange={(e) => setEditBarberName(e.target.value)}
+                    className="w-full bg-[#0a0a0c] border border-[#27272a] focus:border-[#d4af37]/60 text-sm text-slate-100 rounded-lg px-4 py-3 outline-none transition"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs uppercase tracking-wider text-[#a1a1aa] font-medium">Taxa de Comissão (Decimal)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    placeholder="Ex: 0.50 para 50%"
+                    value={editBarberCommission}
+                    onChange={(e) => setEditBarberCommission(e.target.value)}
+                    className="w-full bg-[#0a0a0c] border border-[#27272a] focus:border-[#d4af37]/60 text-sm text-slate-100 rounded-lg px-4 py-3 outline-none transition"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs uppercase tracking-wider text-[#a1a1aa] font-medium">URL do Avatar / Foto (Opcional)</label>
+                <input
+                  type="text"
+                  placeholder="Ex: https://imagens.com/carlos.jpg"
+                  value={editBarberAvatarUrl}
+                  onChange={(e) => setEditBarberAvatarUrl(e.target.value)}
+                  className="w-full bg-[#0a0a0c] border border-[#27272a] focus:border-[#d4af37]/60 text-sm text-slate-100 rounded-lg px-4 py-3 outline-none transition"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs uppercase tracking-wider text-[#a1a1aa] font-medium">Biologia / Especialidade</label>
+                <textarea
+                  rows={3}
+                  placeholder="Ex: Especialista em barba com toalha quente e cortes clássicos e artísticos."
+                  value={editBarberBio}
+                  onChange={(e) => setEditBarberBio(e.target.value)}
+                  className="w-full bg-[#0a0a0c] border border-[#27272a] focus:border-[#d4af37]/60 text-sm text-slate-100 rounded-lg px-4 py-3 outline-none transition resize-none"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-[#27272a]/60">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditForm(false);
+                    setSelectedBarberForEdit(null);
+                  }}
+                  className="flex-1 bg-transparent hover:bg-[#27272a]/40 border border-[#27272a] text-[#a1a1aa] hover:text-white text-xs font-semibold py-3 rounded-lg tracking-widest uppercase transition duration-300"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitLoading}
+                  className="flex-1 bg-[#d4af37] hover:bg-[#c5a130] disabled:bg-[#d4af37]/40 text-black text-xs font-bold py-3 rounded-lg tracking-widest uppercase transition duration-300 shadow-lg"
+                >
+                  {submitLoading ? "SALVANDO..." : "SALVAR ALTERAÇÕES"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

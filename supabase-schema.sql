@@ -42,7 +42,10 @@ CREATE TABLE IF NOT EXISTS public.barber_work_hours (
     day_of_week INTEGER NOT NULL CHECK (day_of_week BETWEEN 0 AND 6),
     start_time TIME WITHOUT TIME ZONE NOT NULL,
     end_time TIME WITHOUT TIME ZONE NOT NULL,
+    lunch_start TIME WITHOUT TIME ZONE,
+    lunch_end TIME WITHOUT TIME ZONE,
     CHECK (start_time < end_time),
+    CHECK (lunch_start IS NULL OR lunch_end IS NULL OR lunch_start < lunch_end),
     UNIQUE (barber_id, day_of_week)
 );
 
@@ -202,6 +205,8 @@ DECLARE
     v_day_of_week INTEGER;
     v_work_starts TIME;
     v_work_ends TIME;
+    v_lunch_starts TIME;
+    v_lunch_ends TIME;
     v_client_id UUID;
     v_tz CONSTANT TEXT := 'America/Porto_Velho';
 BEGIN
@@ -221,7 +226,7 @@ BEGIN
     v_end_time := p_start_time + (v_duration_min * INTERVAL '1 minute');
     v_day_of_week := EXTRACT(DOW FROM p_start_time AT TIME ZONE v_tz);
 
-    SELECT start_time, end_time INTO v_work_starts, v_work_ends
+    SELECT start_time, end_time, lunch_start, lunch_end INTO v_work_starts, v_work_ends, v_lunch_starts, v_lunch_ends
     FROM public.barber_work_hours
     WHERE barber_id = p_barber_id AND day_of_week = v_day_of_week;
 
@@ -232,6 +237,16 @@ BEGIN
     IF ((p_start_time AT TIME ZONE v_tz)::time < v_work_starts) OR 
        ((v_end_time AT TIME ZONE v_tz)::time > v_work_ends) THEN
         RAISE EXCEPTION 'O horário selecionado está fora do expediente do barbeiro (% às %).', v_work_starts, v_work_ends USING ERRCODE = 'ERR02';
+    END IF;
+
+    -- Validar horário de almoço
+    IF v_lunch_starts IS NOT NULL AND v_lunch_ends IS NOT NULL THEN
+        IF NOT (
+            (v_end_time AT TIME ZONE v_tz)::time <= v_lunch_starts OR
+            (p_start_time AT TIME ZONE v_tz)::time >= v_lunch_ends
+        ) THEN
+            RAISE EXCEPTION 'O horário selecionado conflita com o horário de almoço do barbeiro (% às %).', v_lunch_starts, v_lunch_ends USING ERRCODE = 'ERR04';
+        END IF;
     END IF;
 
     BEGIN

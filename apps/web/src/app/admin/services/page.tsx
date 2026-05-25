@@ -30,6 +30,15 @@ export default function ServicesPage() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Estados para edição de serviço
+  const [selectedServiceForEdit, setSelectedServiceForEdit] = useState<ServiceItem | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editPrice, setEditPrice] = useState("");
+  const [editDuration, setEditDuration] = useState("");
+  const [editErrorMessage, setEditErrorMessage] = useState<string | null>(null);
+
   // Buscar serviços do Supabase
   const fetchServices = async () => {
     try {
@@ -123,6 +132,59 @@ export default function ServicesPage() {
       );
     } catch (err: any) {
       alert(`Erro ao atualizar serviço: ${err.message}`);
+    }
+  };
+
+  const handleOpenEditModal = (service: ServiceItem) => {
+    setSelectedServiceForEdit(service);
+    setEditName(service.name);
+    setEditDescription(service.description || "");
+    setEditPrice(String(service.price));
+    setEditDuration(String(service.duration_minutes));
+    setEditErrorMessage(null);
+    setShowEditForm(true);
+  };
+
+  const handleEditService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedServiceForEdit) return;
+    setSubmitLoading(true);
+    setEditErrorMessage(null);
+
+    const priceNum = parseFloat(editPrice);
+    const durationNum = parseInt(editDuration, 10);
+
+    if (isNaN(priceNum) || priceNum <= 0) {
+      setEditErrorMessage("Por favor, insira um preço válido maior que zero.");
+      setSubmitLoading(false);
+      return;
+    }
+
+    if (isNaN(durationNum) || durationNum <= 0) {
+      setEditErrorMessage("Por favor, insira uma duração válida maior que zero.");
+      setSubmitLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await (supabase.from("services") as any)
+        .update({
+          name: editName,
+          description: editDescription || null,
+          price: priceNum,
+          duration_minutes: durationNum,
+        })
+        .eq("id", selectedServiceForEdit.id);
+
+      if (error) throw error;
+
+      setShowEditForm(false);
+      setSelectedServiceForEdit(null);
+      await fetchServices();
+    } catch (err: any) {
+      setEditErrorMessage(err.message || "Erro ao editar serviço.");
+    } finally {
+      setSubmitLoading(false);
     }
   };
 
@@ -266,7 +328,7 @@ export default function ServicesPage() {
                 </div>
 
                 {/* Preço e Status */}
-                <div className="pt-4 border-t border-[#27272a]/50 flex justify-between items-center">
+                <div className="pt-4 border-t border-[#27272a]/50 flex justify-between items-center gap-3">
                   <div className="flex flex-col">
                     <span className="text-[10px] uppercase tracking-wider text-[#a1a1aa]">Preço</span>
                     <span className="text-xl font-bold font-mono text-white mt-0.5">
@@ -274,17 +336,30 @@ export default function ServicesPage() {
                     </span>
                   </div>
 
-                  {/* Toggle de Ativo */}
-                  <button
-                    onClick={() => handleToggleActive(service.id, service.is_active)}
-                    className={`px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wider uppercase border transition duration-200 ${
-                      service.is_active
-                        ? "bg-green-500/10 text-green-400 border-green-500/30 hover:border-green-500/80"
-                        : "bg-red-500/10 text-red-400 border-red-500/30 hover:border-red-500/80"
-                    }`}
-                  >
-                    {service.is_active ? "ATIVO" : "INATIVO"}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {/* Botão de Editar Serviço */}
+                    <button
+                      onClick={() => handleOpenEditModal(service)}
+                      className="p-1.5 rounded-lg border border-[#27272a] hover:border-[#d4af37] bg-[#0a0a0c] text-[#a1a1aa] hover:text-[#d4af37] transition duration-200 flex-shrink-0"
+                      title="Editar Serviço"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+
+                    {/* Toggle de Ativo */}
+                    <button
+                      onClick={() => handleToggleActive(service.id, service.is_active)}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] font-bold tracking-wider uppercase border transition duration-200 flex-shrink-0 ${
+                        service.is_active
+                          ? "bg-green-500/10 text-green-400 border-green-500/30 hover:border-green-500/80"
+                          : "bg-red-500/10 text-red-400 border-red-500/30 hover:border-red-500/80"
+                      }`}
+                    >
+                      {service.is_active ? "ATIVO" : "INATIVO"}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))
@@ -292,6 +367,108 @@ export default function ServicesPage() {
         </section>
 
       </main>
+
+      {/* Modal de Edição de Serviço */}
+      {showEditForm && selectedServiceForEdit && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-fade-in overflow-y-auto">
+          <div className="bg-[#121215] border border-[#d4af37]/30 rounded-xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl relative">
+            <div className="flex justify-between items-center border-b border-[#27272a]/60 pb-4">
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-[#d4af37] font-bold">AJUSTE DE CATÁLOGO</span>
+                <h3 className="text-lg font-semibold text-white tracking-wide mt-1">Editar Serviço</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowEditForm(false);
+                  setSelectedServiceForEdit(null);
+                }}
+                className="text-slate-400 hover:text-white transition"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {editErrorMessage && (
+              <div className="p-3.5 bg-red-950/20 border border-red-500/35 rounded-lg text-red-400 text-xs">
+                ⚠️ {editErrorMessage}
+              </div>
+            )}
+
+            <form onSubmit={handleEditService} className="space-y-5">
+              <div className="space-y-1.5">
+                <label className="text-xs uppercase tracking-wider text-[#a1a1aa] font-medium">Nome do Serviço</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Corte Degradê + Barba Completa"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full bg-[#0a0a0c] border border-[#27272a] focus:border-[#d4af37]/60 text-sm text-slate-100 rounded-lg px-4 py-3 outline-none transition"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-xs uppercase tracking-wider text-[#a1a1aa] font-medium">Preço (R$)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    placeholder="Ex: 50.00"
+                    value={editPrice}
+                    onChange={(e) => setEditPrice(e.target.value)}
+                    className="w-full bg-[#0a0a0c] border border-[#27272a] focus:border-[#d4af37]/60 text-sm text-slate-100 rounded-lg px-4 py-3 outline-none transition"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs uppercase tracking-wider text-[#a1a1aa] font-medium">Duração (Minutos)</label>
+                  <input
+                    type="number"
+                    required
+                    placeholder="Ex: 45"
+                    value={editDuration}
+                    onChange={(e) => setEditDuration(e.target.value)}
+                    className="w-full bg-[#0a0a0c] border border-[#27272a] focus:border-[#d4af37]/60 text-sm text-slate-100 rounded-lg px-4 py-3 outline-none transition"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs uppercase tracking-wider text-[#a1a1aa] font-medium">Descrição (Opcional)</label>
+                <textarea
+                  rows={3}
+                  placeholder="Ex: Descrição detalhada do corte..."
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  className="w-full bg-[#0a0a0c] border border-[#27272a] focus:border-[#d4af37]/60 text-sm text-slate-100 rounded-lg px-4 py-3 outline-none transition resize-none"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-[#27272a]/60">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditForm(false);
+                    setSelectedServiceForEdit(null);
+                  }}
+                  className="flex-1 bg-transparent hover:bg-[#27272a]/40 border border-[#27272a] text-[#a1a1aa] hover:text-white text-xs font-semibold py-3.5 rounded-lg tracking-widest uppercase transition duration-300"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitLoading}
+                  className="flex-1 bg-[#d4af37] hover:bg-[#c5a130] disabled:bg-[#d4af37]/40 text-black text-xs font-bold py-3.5 rounded-lg tracking-widest uppercase transition duration-300 shadow-lg"
+                >
+                  {submitLoading ? "SALVANDO..." : "Salvar Alterações"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Rodapé */}
       <footer className="border-t border-[#27272a]/30 py-6 text-center text-[10px] text-slate-600 font-mono uppercase tracking-widest mt-auto">

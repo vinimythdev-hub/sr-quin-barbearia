@@ -52,6 +52,9 @@ export default function CalendarGridPage() {
   // Controle do barbeiro selecionado em modo mobile
   const [activeMobileBarberId, setActiveMobileBarberId] = useState<string | null>(null);
 
+  // Escalas de expediente com horário de almoço
+  const [barberScales, setBarberScales] = useState<any[]>([]);
+
   // Carregar barbeiros e agendamentos para o dia selecionado
   const fetchCalendarData = async () => {
     try {
@@ -67,6 +70,23 @@ export default function CalendarGridPage() {
 
       if (barberData && barberData.length > 0 && !activeMobileBarberId) {
         setActiveMobileBarberId((barberData as any[])[0].id);
+      }
+
+      // Buscar escalas de trabalho (com almoço) para o dia da semana selecionado
+      try {
+        const dateObj = new Date(`${selectedDate}T12:00:00`);
+        const dayOfWeek = dateObj.getDay();
+
+        const { data: scalesData, error: scalesError } = await supabase
+          .from("barber_work_hours")
+          .select("barber_id, start_time, end_time, lunch_start, lunch_end")
+          .eq("day_of_week", dayOfWeek);
+
+        if (scalesError) throw scalesError;
+        setBarberScales(scalesData || []);
+      } catch (scaleErr) {
+        console.error("Erro ao carregar escala de almoço:", scaleErr);
+        setBarberScales([]);
       }
 
       // 2. Calcular intervalo de data correspondente à selectedDate no fuso de Rondônia
@@ -151,6 +171,22 @@ export default function CalendarGridPage() {
     // Ajustar para fuso horário de Rondônia (UTC -4) para cálculo
     const startHourLocal = start.getUTCHours() - 4 + start.getUTCMinutes() / 60;
     const endHourLocal = end.getUTCHours() - 4 + end.getUTCMinutes() / 60;
+
+    const startDiff = startHourLocal - 8; // Início do expediente (08:00)
+    const duration = endHourLocal - startHourLocal;
+
+    return {
+      top: Math.max(0, startDiff * slotHeight),
+      height: Math.max(30, duration * slotHeight)
+    };
+  };
+
+  const getLunchPosition = (lunchStart: string, lunchEnd: string) => {
+    const [startH, startM] = lunchStart.split(":").map(Number);
+    const [endH, endM] = lunchEnd.split(":").map(Number);
+
+    const startHourLocal = startH + startM / 60;
+    const endHourLocal = endH + endM / 60;
 
     const startDiff = startHourLocal - 8; // Início do expediente (08:00)
     const duration = endHourLocal - startHourLocal;
@@ -316,6 +352,29 @@ export default function CalendarGridPage() {
                                 <div className="absolute top-1/2 left-0 w-full border-b border-dashed border-[#27272a]/15 pointer-events-none" />
                               </div>
                             ))}
+
+                            {/* Bloco de Almoço */}
+                            {(() => {
+                              const scale = barberScales.find(s => s.barber_id === barber.id);
+                              if (scale?.lunch_start && scale?.lunch_end) {
+                                const pos = getLunchPosition(scale.lunch_start, scale.lunch_end);
+                                return (
+                                  <div
+                                    className="absolute left-3 right-3 rounded-lg border border-[#27272a]/50 opacity-30 flex items-center justify-center pointer-events-none"
+                                    style={{
+                                      top: `${pos.top + 6}px`,
+                                      height: `${pos.height - 12}px`,
+                                      backgroundImage: 'repeating-linear-gradient(45deg, #1c1917, #1c1917 10px, #27272a 10px, #27272a 20px)'
+                                    }}
+                                  >
+                                    <span className="text-[10px] tracking-[0.2em] font-mono text-slate-400 font-bold uppercase select-none">
+                                      INTERVALO ALMOÇO
+                                    </span>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })()}
 
                             {/* Cartões dos Agendamentos */}
                             {barberApps.map((app) => {
