@@ -154,6 +154,73 @@ export interface Database {
           created_at?: string
         }
       }
+      whatsapp_settings: {
+        Row: {
+          id: string
+          api_url: string
+          instance_name: string
+          api_token: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          api_url: string
+          instance_name: string
+          api_token: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          api_url?: string
+          instance_name?: string
+          api_token?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      pending_notifications: {
+        Row: {
+          id: string
+          appointment_id: string | null
+          client_id: string
+          phone: string
+          type: string
+          scheduled_at: string
+          message: string
+          status: string
+          error_message: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          appointment_id?: string | null
+          client_id: string
+          phone: string
+          type: string
+          scheduled_at: string
+          message: string
+          status?: string
+          error_message?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          appointment_id?: string | null
+          client_id?: string
+          phone?: string
+          type?: string
+          scheduled_at?: string
+          message?: string
+          status?: string
+          error_message?: string | null
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

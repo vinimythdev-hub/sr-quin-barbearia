@@ -277,3 +277,157 @@ BEGIN
     END;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 7. TABELAS DE INTEGRAÇÃO DO WHATSAPP E FILA DE NOTIFICAÇÕES
+CREATE TABLE IF NOT EXISTS public.whatsapp_settings (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    api_url TEXT NOT NULL,
+    instance_name TEXT NOT NULL,
+    api_token TEXT NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Habilitar RLS para whatsapp_settings
+ALTER TABLE public.whatsapp_settings ENABLE ROW LEVEL SECURITY;
+
+-- Políticas para whatsapp_settings (apenas admin pode gerenciar credenciais)
+DROP POLICY IF EXISTS "Apenas admin pode gerenciar whatsapp_settings" ON public.whatsapp_settings;
+CREATE POLICY "Apenas admin pode gerenciar whatsapp_settings"
+    ON public.whatsapp_settings FOR ALL
+    USING (public.is_admin());
+
+CREATE TABLE IF NOT EXISTS public.pending_notifications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    appointment_id UUID REFERENCES public.appointments(id) ON DELETE CASCADE,
+    client_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    phone TEXT NOT NULL,
+    type TEXT NOT NULL CHECK (type IN ('confirmation', 'reminder')),
+    scheduled_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    message TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'failed')),
+    error_message TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Habilitar RLS para pending_notifications
+ALTER TABLE public.pending_notifications ENABLE ROW LEVEL SECURITY;
+
+-- Políticas para pending_notifications (apenas admin pode ler/gerenciar a fila de notificações)
+DROP POLICY IF EXISTS "Apenas admin pode ler e gerenciar pending_notifications" ON public.pending_notifications;
+CREATE POLICY "Apenas admin pode ler e gerenciar pending_notifications"
+    ON public.pending_notifications FOR ALL
+    USING (public.is_admin());
+
+-- 8. LÓGICA DE GATILHOS PARA AGENDAMENTO AUTOMÁTICO DE NOTIFICAÇÕES
+CREATE OR REPLACE FUNCTION public.queue_appointment_notifications()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_client_name TEXT;
+    v_client_phone TEXT;
+    v_service_name TEXT;
+    v_barber_name TEXT;
+    v_start_time_local TIMESTAMP;
+    v_start_time_formatted TEXT;
+    v_tz CONSTANT TEXT := 'America/Porto_Velho';
+    v_reminder_time TIMESTAMP WITH TIME ZONE;
+    v_start_hour INTEGER;
+    v_day_before_18h TIMESTAMP WITH TIME ZONE;
+    v_same_day_8h TIMESTAMP WITH TIME ZONE;
+BEGIN
+    -- Se for INSERT ou UPDATE para o status 'scheduled'
+    IF (TG_OP = 'INSERT') OR (TG_OP = 'UPDATE' AND NEW.status = 'scheduled' AND OLD.status != 'scheduled') THEN
+        -- Obter dados do cliente
+        SELECT name, phone INTO v_client_name, v_client_phone
+        FROM public.profiles
+        WHERE id = NEW.client_id;
+        
+        -- Obter dados do serviço
+        SELECT name INTO v_service_name
+        FROM public.services
+        WHERE id = NEW.service_id;
+        
+        -- Obter dados do barbeiro
+        SELECT name INTO v_barber_name
+        FROM public.barbers
+        WHERE id = NEW.barber_id;
+
+        -- Se não tem telefone, não agenda notificações
+        IF v_client_phone IS NULL OR v_client_phone = '' THEN
+            RETURN NEW;
+        END IF;
+
+        -- Conversão de fuso horário local de Rondônia para exibição amigável
+        v_start_time_local := NEW.start_time AT TIME ZONE v_tz;
+        v_start_time_formatted := to_char(v_start_time_local, 'DD/MM/YYYY "às" HH24:MI');
+        v_start_hour := EXTRACT(HOUR FROM v_start_time_local);
+
+        -- 1. Fila de confirmação imediata (scheduled_at = now())
+        INSERT INTO public.pending_notifications (
+            appointment_id,
+            client_id,
+            phone,
+            type,
+            scheduled_at,
+            message,
+            status
+        ) VALUES (
+            NEW.id,
+            NEW.client_id,
+            v_client_phone,
+            'confirmation',
+            timezone('utc'::text, now()), -- disparo imediato
+            'Olá, ' || v_client_name || '! Seu agendamento para ' || v_service_name || ' com ' || v_barber_name || ' foi confirmado para o dia ' || v_start_time_formatted || '. Lembramos que temos uma tolerância máxima de atraso de 10 minutos. Te esperamos lá!',
+            'pending'
+        );
+
+        -- 2. Calcular o lembrete inteligente
+        -- Se o corte for pela manhã (antes das 12:00 local)
+        IF v_start_hour < 12 THEN
+            -- Lembrar 1 dia antes às 18:00
+            v_day_before_18h := ((v_start_time_local - INTERVAL '1 day')::date + TIME '18:00:00') AT TIME ZONE v_tz;
+            v_reminder_time := v_day_before_18h;
+        ELSE
+            -- Se o corte for à tarde/noite (a partir das 12:00 local), lembrar no próprio dia às 08:00
+            v_same_day_8h := (v_start_time_local::date + TIME '08:00:00') AT TIME ZONE v_tz;
+            v_reminder_time := v_same_day_8h;
+        END IF;
+
+        -- Só agenda o lembrete se o horário calculado for no futuro
+        IF v_reminder_time > now() THEN
+            INSERT INTO public.pending_notifications (
+                appointment_id,
+                client_id,
+                phone,
+                type,
+                scheduled_at,
+                message,
+                status
+            ) VALUES (
+                NEW.id,
+                NEW.client_id,
+                v_client_phone,
+                'reminder',
+                v_reminder_time,
+                'Olá, ' || v_client_name || '! Passando para te lembrar do seu horário agendado de ' || v_service_name || ' com ' || v_barber_name || ' para o dia ' || v_start_time_formatted || '. Lembramos que a nossa tolerância máxima de atraso é de 10 minutos. Até logo!',
+                'pending'
+            );
+        END IF;
+
+    -- Se o status mudou de 'scheduled' para outra coisa (cancelado, falta, etc.)
+    ELSIF (TG_OP = 'UPDATE' AND NEW.status != 'scheduled' AND OLD.status = 'scheduled') THEN
+        -- Cancelar lembretes ainda pendentes correspondentes
+        DELETE FROM public.pending_notifications
+        WHERE appointment_id = NEW.id AND status = 'pending';
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Gatilho de inserção/atualização de agendamento
+CREATE OR REPLACE TRIGGER trigger_on_appointment_change
+    AFTER INSERT OR UPDATE ON public.appointments
+    FOR EACH ROW EXECUTE FUNCTION public.queue_appointment_notifications();
+

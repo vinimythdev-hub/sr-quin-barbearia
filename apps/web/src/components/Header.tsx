@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 interface HeaderProps {
-  activePage: "dashboard" | "calendar" | "services" | "barbers" | "clients" | "reports";
+  activePage: "dashboard" | "calendar" | "services" | "barbers" | "clients" | "reports" | "whatsapp";
 }
 
 interface UserProfile {
@@ -63,6 +63,7 @@ export default function Header({ activePage }: HeaderProps) {
     { id: "barbers", label: "EQUIPE / BARBEIROS", path: "/admin/barbers" },
     { id: "clients", label: "CLIENTES & CRM", path: "/admin/clients" },
     { id: "reports", label: "RELATÓRIOS / FINANCEIRO", path: "/admin/reports" },
+    { id: "whatsapp", label: "CONFIG WHATSAPP", path: "/admin/whatsapp" },
   ];
 
   return (
