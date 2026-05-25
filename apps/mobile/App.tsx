@@ -7,6 +7,7 @@ import AuthScreen from './src/screens/AuthScreen';
 import BookingScreen from './src/screens/BookingScreen';
 import AppointmentsScreen from './src/screens/AppointmentsScreen';
 import { Session } from '@supabase/supabase-js';
+// @ts-ignore
 import { Feather } from '@expo/vector-icons';
 
 export default function App() {
@@ -154,26 +155,20 @@ export default function App() {
               </View>
               <Text style={styles.actionArrow}>➔</Text>
             </TouchableOpacity>
-            <Text style={styles.actionTitle}>Minhas Reservas</Text>
-            <Text style={styles.actionDesc}>Veja horários agendados e cancele se necessário</Text>
           </View>
-          <Text style={styles.actionArrow}>➔</Text>
-        </TouchableOpacity>
 
-      {/* Relógio / Timezone de Porto Velho */}
-      <View style={styles.timeCard}>
-        <Text style={styles.timeLabel}>Horário Local de Rondônia (UTC-4):</Text>
-        <Text style={styles.timeText}>{currentLocalTime}</Text>
-      </View>
-    </View>
+          {/* Relógio / Timezone de Porto Velho */}
+          <View style={styles.timeCard}>
+            <Text style={styles.timeLabel}>Horário Local de Rondônia (UTC-4):</Text>
+            <Text style={styles.timeText}>{currentLocalTime}</Text>
+          </View>
 
-          {/* Rodapé Art Déco */ }
-  <View style={styles.footer}>
-    <Text style={styles.footerText}>SR. QUIN BARBEARIA • EST. 2026</Text>
-  </View>
+          {/* Rodapé Art Déco */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>SR. QUIN BARBEARIA • EST. 2026</Text>
+          </View>
         </>
-      )
-}
+      )}
     </SafeAreaView >
   );
 }

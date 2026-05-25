@@ -8,9 +8,12 @@ import {
   ActivityIndicator,
   FlatList,
   Platform,
+  Image,
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { formatToRondoniaTime, RONDONIA_TIMEZONE } from '@barbearia/shared';
+// @ts-ignore
+import { Feather } from '@expo/vector-icons';
 
 interface ServiceItem {
   id: string;
@@ -43,6 +46,13 @@ interface BookingScreenProps {
 }
 
 export default function BookingScreen({ onBack, onSuccess }: BookingScreenProps) {
+  const getBarberIcon = (name: string): "scissors" | "user" | "award" | "smile" => {
+    const lower = name.toLowerCase();
+    if (lower.includes('carlos') || lower.includes('corte') || lower.includes('cabelo')) return 'scissors';
+    if (lower.includes('barba') || lower.includes('navalha')) return 'award';
+    return 'user';
+  };
+
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -315,9 +325,11 @@ export default function BookingScreen({ onBack, onSuccess }: BookingScreenProps)
             >
               <View style={styles.barberInfo}>
                 <View style={styles.barberAvatarBadge}>
-                  <Text style={styles.barberInitials}>
-                    {item.name.substring(0, 2).toUpperCase()}
-                  </Text>
+                  {item.avatar_url && item.avatar_url.startsWith('http') ? (
+                    <Image source={{ uri: item.avatar_url }} style={styles.barberAvatarImage} />
+                  ) : (
+                    <Feather name={getBarberIcon(item.name)} size={20} color="#d4af37" />
+                  )}
                 </View>
                 <View style={styles.barberTextContent}>
                   <Text style={styles.barberName}>{item.name}</Text>
@@ -639,6 +651,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#d4af37',
+  },
+  barberAvatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 23,
   },
   barberTextContent: {
     flex: 1,
