@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 // Sem next/link para evitar incompatibilidades de tipo React 18/19 no JSX do Monorepo
 import { supabase } from "@/lib/supabase";
+import Header from "@/components/Header";
 
 interface ServiceItem {
   id: string;
@@ -142,43 +143,8 @@ export default function ServicesPage() {
     <div className="min-h-screen bg-[#0a0a0c] text-[#f3f4f6] relative flex flex-col">
       <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-[#d4af37]/2 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Barra de Navegação */}
-      <header className="border-b border-[#27272a]/50 bg-[#121215]/50 backdrop-blur-md sticky top-0 z-50 px-6 sm:px-12 py-5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full border border-[#d4af37]/30 flex items-center justify-center bg-[#0a0a0c]">
-            <span className="font-display text-lg font-bold text-[#d4af37]">Q</span>
-          </div>
-          <div className="flex flex-col">
-            <h2 className="font-display text-lg font-light tracking-widest leading-none text-[#f3f4f6]">
-              SR. QUIN
-            </h2>
-            <span className="text-[8px] uppercase tracking-[0.3em] text-[#d4af37] font-semibold mt-1">
-              BARBEARIA
-            </span>
-          </div>
-        </div>
-
-        <nav className="hidden md:flex items-center gap-8 text-xs font-semibold tracking-widest text-[#a1a1aa]">
-          <a href="/" className="hover:text-[#d4af37] transition duration-200">
-            PAINEL PRINCIPAL
-          </a>
-          <a href="/admin/services" className="text-[#d4af37] font-bold">
-            CATÁLOGO DE SERVIÇOS
-          </a>
-          <a href="/admin/barbers" className="hover:text-[#d4af37] transition duration-200">
-            EQUIPE / BARBEIROS
-          </a>
-        </nav>
-
-        <div>
-          <a 
-            href="/"
-            className="border border-[#d4af37]/40 hover:border-[#d4af37] bg-transparent text-[#d4af37] px-4 py-2 rounded-lg text-xs font-semibold tracking-wider transition duration-300"
-          >
-            VOLTAR
-          </a>
-        </div>
-      </header>
+      {/* Barra de Navegação Premium Responsiva */}
+      <Header activePage="services" />
 
       {/* Conteúdo Principal */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 sm:p-12 space-y-10">

@@ -7,12 +7,13 @@ import AuthScreen from './src/screens/AuthScreen';
 import BookingScreen from './src/screens/BookingScreen';
 import AppointmentsScreen from './src/screens/AppointmentsScreen';
 import { Session } from '@supabase/supabase-js';
+import { Feather } from '@expo/vector-icons';
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
-  
+
   // Controle de navegação por estado interno (Tabs / Stack leve e resiliente)
   const [currentScreen, setCurrentScreen] = useState<'dashboard' | 'booking' | 'appointments'>('dashboard');
 
@@ -105,7 +106,7 @@ export default function App() {
               <Text style={styles.welcome}>Seja bem-vindo,</Text>
               <Text style={styles.clientName}>{clientName}</Text>
             </View>
-            
+
             <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
               <Text style={styles.logoutBtnText}>Sair</Text>
             </TouchableOpacity>
@@ -113,23 +114,23 @@ export default function App() {
 
           {/* Corpo Principal do Dashboard */}
           <View style={styles.content}>
-            
+
             {/* Banner Decorativo */}
             <View style={styles.welcomeCard}>
-              <Text style={styles.welcomeTitle}>Sua Agenda de Estilo 💈</Text>
+              <Text style={styles.welcomeTitle}>Sua Agenda de Estilo</Text>
               <Text style={styles.welcomeDesc}>
                 Gerencie seus agendamentos e reserve seu horário exclusivo direto do seu smartphone.
               </Text>
             </View>
 
             {/* Ação 1: Agendar Novo Horário */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.actionCard}
               onPress={() => setCurrentScreen('booking')}
               activeOpacity={0.85}
             >
               <View style={styles.actionEmojiBadge}>
-                <Text style={styles.actionEmoji}>🗓️</Text>
+                <Feather name="calendar" size={22} color="#d4af37" />
               </View>
               <View style={styles.actionTextContainer}>
                 <Text style={styles.actionTitle}>Agendar Horário</Text>
@@ -139,13 +140,13 @@ export default function App() {
             </TouchableOpacity>
 
             {/* Ação 2: Minhas Reservas */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.actionCard, { borderColor: 'rgba(39, 39, 42, 0.7)', backgroundColor: '#121215' }]}
               onPress={() => setCurrentScreen('appointments')}
               activeOpacity={0.85}
             >
               <View style={[styles.actionEmojiBadge, { borderColor: 'rgba(255, 255, 255, 0.1)' }]}>
-                <Text style={styles.actionEmoji}>📂</Text>
+                <Feather name="book-open" size={22} color="#a1a1aa" />
               </View>
               <View style={styles.actionTextContainer}>
                 <Text style={styles.actionTitle}>Minhas Reservas</Text>
@@ -153,21 +154,27 @@ export default function App() {
               </View>
               <Text style={styles.actionArrow}>➔</Text>
             </TouchableOpacity>
-
-            {/* Relógio / Timezone de Porto Velho */}
-            <View style={styles.timeCard}>
-              <Text style={styles.timeLabel}>Horário Local de Rondônia (UTC-4):</Text>
-              <Text style={styles.timeText}>{currentLocalTime}</Text>
-            </View>
+            <Text style={styles.actionTitle}>Minhas Reservas</Text>
+            <Text style={styles.actionDesc}>Veja horários agendados e cancele se necessário</Text>
           </View>
+          <Text style={styles.actionArrow}>➔</Text>
+        </TouchableOpacity>
 
-          {/* Rodapé Art Déco */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>SR. QUIN BARBEARIA • EST. 2026</Text>
-          </View>
+      {/* Relógio / Timezone de Porto Velho */}
+      <View style={styles.timeCard}>
+        <Text style={styles.timeLabel}>Horário Local de Rondônia (UTC-4):</Text>
+        <Text style={styles.timeText}>{currentLocalTime}</Text>
+      </View>
+    </View>
+
+          {/* Rodapé Art Déco */ }
+  <View style={styles.footer}>
+    <Text style={styles.footerText}>SR. QUIN BARBEARIA • EST. 2026</Text>
+  </View>
         </>
-      )}
-    </SafeAreaView>
+      )
+}
+    </SafeAreaView >
   );
 }
 

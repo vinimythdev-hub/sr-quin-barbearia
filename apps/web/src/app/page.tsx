@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 // Sem next/link para evitar incompatibilidades de tipo React 18/19 no JSX do Monorepo
 import { supabase } from "@/lib/supabase";
 import { formatToRondoniaTime, RONDONIA_TIMEZONE } from "@barbearia/shared";
+import Header from "@/components/Header";
 
 interface UserProfile {
   name: string;
@@ -205,51 +206,8 @@ export default function HomePage() {
       {/* Elemento de brilho ambiente dourado */}
       <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-[#d4af37]/2 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* 1. Barra de Navegação Premium */}
-      <header className="border-b border-[#27272a]/50 bg-[#121215]/50 backdrop-blur-md sticky top-0 z-50 px-6 sm:px-12 py-5 flex items-center justify-between">
-        
-        {/* Logo e Info */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full border border-[#d4af37]/30 flex items-center justify-center bg-[#0a0a0c] shadow-[0_0_10px_rgba(212,175,55,0.05)]">
-            <span className="font-display text-lg font-bold text-[#d4af37]">Q</span>
-          </div>
-          <div className="flex flex-col">
-            <h2 className="font-display text-lg font-light tracking-widest leading-none text-[#f3f4f6]">
-              SR. QUIN
-            </h2>
-            <span className="text-[8px] uppercase tracking-[0.3em] text-[#d4af37] font-semibold mt-1">
-              BARBEARIA
-            </span>
-          </div>
-        </div>
-
-        {/* Links de Administração no Header */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-semibold tracking-widest text-[#a1a1aa]">
-          <a href="/admin/services" className="hover:text-[#d4af37] transition duration-200">
-            CATÁLOGO DE SERVIÇOS
-          </a>
-          <a href="/admin/barbers" className="hover:text-[#d4af37] transition duration-200">
-            EQUIPE / BARBEIROS
-          </a>
-        </nav>
-
-        {/* Info do Usuário & Logout */}
-        <div className="flex items-center gap-6">
-          <div className="hidden sm:flex flex-col items-end">
-            <span className="text-xs font-semibold text-slate-200">{profile?.name}</span>
-            <span className="text-[10px] uppercase tracking-wider text-[#d4af37] font-mono font-medium">
-              {profile?.role === "admin" ? "Dono / Gerente" : "Colaborador"}
-            </span>
-          </div>
-
-          <button
-            onClick={handleLogout}
-            className="border border-[#b91c1c]/30 hover:border-[#b91c1c]/80 bg-[#7f1d1d]/10 hover:bg-[#7f1d1d]/20 text-[#f87171] hover:text-white px-4 py-2 rounded-lg text-xs font-medium tracking-wider uppercase transition duration-300"
-          >
-            Sair
-          </button>
-        </div>
-      </header>
+      {/* 1. Barra de Navegação Premium Responsiva */}
+      <Header activePage="dashboard" />
 
       {/* 2. Conteúdo Principal */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 sm:p-12 space-y-10">
