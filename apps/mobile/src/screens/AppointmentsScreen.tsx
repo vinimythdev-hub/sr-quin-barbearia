@@ -76,39 +76,52 @@ export default function AppointmentsScreen({ onBack }: AppointmentsScreenProps) 
   }, []);
 
   const handleCancelAppointment = async (appointmentId: string) => {
-    Alert.alert(
-      'Cancelar Reserva',
-      'Tem certeza de que deseja cancelar seu horário de agendamento?',
-      [
-        { text: 'Não', style: 'cancel' },
-        {
-          text: 'Sim, Cancelar',
-          style: 'destructive',
-          onPress: async () => {
-            setActionLoadingId(appointmentId);
-            try {
-              // Update status to cancelled in Supabase
-              const { error } = await (supabase.from('appointments') as any)
-                .update({ status: 'cancelled' })
-                .eq('id', appointmentId);
+    const performCancel = async () => {
+      setActionLoadingId(appointmentId);
+      try {
+        // Update status to cancelled in Supabase
+        const { error } = await (supabase.from('appointments') as any)
+          .update({ status: 'cancelled' })
+          .eq('id', appointmentId);
 
-              if (error) throw error;
+        if (error) throw error;
 
-              // Refresh list local state
-              setAppointments((prev: AppointmentItem[]) =>
-                prev.map((app) =>
-                  app.id === appointmentId ? { ...app, status: 'cancelled' } : app
-                )
-              );
-            } catch (err: any) {
-              Alert.alert('Erro ao cancelar', err.message || 'Houve um problema ao processar seu cancelamento.');
-            } finally {
-              setActionLoadingId(null);
-            }
+        // Refresh list local state
+        setAppointments((prev: AppointmentItem[]) =>
+          prev.map((app) =>
+            app.id === appointmentId ? { ...app, status: 'cancelled' } : app
+          )
+        );
+      } catch (err: any) {
+        if (Platform.OS === 'web') {
+          alert(`Erro ao cancelar: ${err.message || 'Houve um problema.'}`);
+        } else {
+          Alert.alert('Erro ao cancelar', err.message || 'Houve um problema ao processar seu cancelamento.');
+        }
+      } finally {
+        setActionLoadingId(null);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      const confirm = window.confirm('Tem certeza de que deseja cancelar seu horário de agendamento?');
+      if (confirm) {
+        await performCancel();
+      }
+    } else {
+      Alert.alert(
+        'Cancelar Reserva',
+        'Tem certeza de que deseja cancelar seu horário de agendamento?',
+        [
+          { text: 'Não', style: 'cancel' },
+          {
+            text: 'Sim, Cancelar',
+            style: 'destructive',
+            onPress: performCancel,
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   // Filter schedules based on tab
