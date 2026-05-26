@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { z } from 'zod';
-import { FONT_DISPLAY, FONT_BODY, COLOR_BG_BASE, COLOR_BG_CARD, COLOR_BORDER, COLOR_GOLD } from '../lib/typography';
+import { FONT_DISPLAY, FONT_BODY, COLOR_BG_BASE, COLOR_BG_CARD, COLOR_BORDER, COLOR_GOLD, COLOR_TIJOLO } from '../lib/typography';
 
 const signUpSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres' }),
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   submitBtnText: {
     color: '#0f0e0d',
     fontSize: 14,
-    fontWeight: '750',
+    fontWeight: '700',
     letterSpacing: 1,
     fontFamily: FONT_BODY,
   },

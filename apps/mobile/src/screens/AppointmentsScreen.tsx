@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { formatToRondoniaTime } from '@barbearia/shared';
-import { FONT_DISPLAY, FONT_BODY, FONT_MONO, COLOR_BG_BASE, COLOR_BG_CARD, COLOR_BORDER, COLOR_GOLD } from '../lib/typography';
+import { FONT_DISPLAY, FONT_BODY, FONT_MONO, COLOR_BG_BASE, COLOR_BG_CARD, COLOR_BORDER, COLOR_GOLD, COLOR_TIJOLO } from '../lib/typography';
 
 interface AppointmentItem {
   id: string;

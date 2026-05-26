@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { formatToRondoniaTime, RONDONIA_TIMEZONE } from '@barbearia/shared';
-import { FONT_DISPLAY, FONT_BODY, FONT_MONO, COLOR_BG_BASE, COLOR_BG_CARD, COLOR_BORDER, COLOR_GOLD } from '../lib/typography';
+import { FONT_DISPLAY, FONT_BODY, FONT_MONO, COLOR_BG_BASE, COLOR_BG_CARD, COLOR_BORDER, COLOR_GOLD, COLOR_TIJOLO } from '../lib/typography';
 // @ts-ignore
 import { Feather } from '@expo/vector-icons';
 
@@ -367,7 +367,7 @@ export default function BookingScreen({ onBack, onSuccess }: BookingScreenProps)
               <View style={styles.barberInfo}>
                 <View style={styles.barberAvatarBadge}>
                   {item.avatar_url && item.avatar_url.startsWith('http') ? (
-                    <Image source={{ uri: item.avatar_url }} style={styles.barberAvatarImage} />
+                    <Image source={{ uri: item.avatar_url }} style={styles.barberAvatarImage as any} />
                   ) : (
                     <Feather name={getBarberIcon(item.name)} size={20} color="#d4af37" />
                   )}
@@ -814,7 +814,7 @@ const styles = StyleSheet.create({
   nextBtnText: {
     color: '#0f0e0d',
     fontSize: 13,
-    fontWeight: '750',
+    fontWeight: '700',
     letterSpacing: 1.5,
     fontFamily: FONT_BODY,
   },

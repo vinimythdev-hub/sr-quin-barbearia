@@ -9,7 +9,7 @@ import AppointmentsScreen from './src/screens/AppointmentsScreen';
 import { Session } from '@supabase/supabase-js';
 // @ts-ignore
 import { Feather } from '@expo/vector-icons';
-import { FONT_DISPLAY, FONT_BODY, FONT_MONO, COLOR_BG_BASE, COLOR_BG_CARD, COLOR_BORDER, COLOR_GOLD } from './src/lib/typography';
+import { FONT_DISPLAY, FONT_BODY, FONT_MONO, COLOR_BG_BASE, COLOR_BG_CARD, COLOR_BORDER, COLOR_GOLD, COLOR_TIJOLO } from './src/lib/typography';
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
