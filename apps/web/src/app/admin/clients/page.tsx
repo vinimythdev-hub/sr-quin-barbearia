@@ -29,7 +29,7 @@ export default function ClientsCRMPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClient, setSelectedClient] = useState<ClientItem | null>(null);
 
-  // Buscar clientes e seus respectivos históricos de agendamentos
+  // Buscar clientes e seus respectivos históricos de agendamentos (filtrando perfis anônimos/incompletos)
   const fetchClients = async () => {
     try {
       const { data, error } = await supabase
@@ -48,6 +48,11 @@ export default function ClientsCRMPage() {
           )
         `)
         .eq("role", "client")
+        .not("name", "is", null)
+        .not("phone", "is", null)
+        .neq("name", "Convidado")
+        .neq("name", "")
+        .neq("phone", "")
         .order("name", { ascending: true });
 
       if (error) throw error;
