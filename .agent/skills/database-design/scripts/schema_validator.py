@@ -29,18 +29,32 @@ except:
 def find_schema_files(project_path: Path) -> list:
     """Find database schema files."""
     schemas = []
+    import os
+    SKIP_DIRS = {'node_modules', '.git', 'dist', 'build', '__pycache__', '.venv', 'venv', '.next'}
     
-    # Prisma schema
-    prisma_files = list(project_path.glob('**/prisma/schema.prisma'))
-    schemas.extend([('prisma', f) for f in prisma_files])
-    
-    # Drizzle schema files
-    drizzle_files = list(project_path.glob('**/drizzle/*.ts'))
-    drizzle_files.extend(project_path.glob('**/schema/*.ts'))
-    for f in drizzle_files:
-        if 'schema' in f.name.lower() or 'table' in f.name.lower():
-            schemas.append(('drizzle', f))
-    
+    for root, dirs, files in os.walk(project_path):
+        dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+        
+        # Check for prisma/schema.prisma
+        if 'prisma' in dirs:
+            prisma_file = Path(root) / 'prisma' / 'schema.prisma'
+            if prisma_file.exists():
+                schemas.append(('prisma', prisma_file))
+                
+        # Check for drizzle/*.ts
+        if 'drizzle' in dirs:
+            drizzle_dir = Path(root) / 'drizzle'
+            for f in drizzle_dir.glob('*.ts'):
+                if 'schema' in f.name.lower() or 'table' in f.name.lower():
+                    schemas.append(('drizzle', f))
+                    
+        # Check for schema/*.ts
+        if 'schema' in dirs:
+            schema_dir = Path(root) / 'schema'
+            for f in schema_dir.glob('*.ts'):
+                if 'schema' in f.name.lower() or 'table' in f.name.lower():
+                    schemas.append(('drizzle', f))
+                    
     return schemas[:10]  # Limit
 
 

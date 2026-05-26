@@ -424,7 +424,7 @@ export default function BarbersPage() {
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {barbers.length === 0 ? (
             <div className="col-span-full bg-[#121215] border border-[#27272a] rounded-xl p-12 text-center text-slate-500 font-light text-sm">
-              Nenhum profissional cadastrado. Clique em "Novo Barbeiro" para começar a estruturar sua equipe.
+              Nenhum profissional cadastrado. Clique em &quot;Novo Barbeiro&quot; para começar a estruturar sua equipe.
             </div>
           ) : (
             barbers.map((barber) => (

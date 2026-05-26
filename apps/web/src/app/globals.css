@@ -21,7 +21,7 @@ body {
 
 @layer utilities {
   .bg-\[\#0a0a0c\] {
-    background-color: #11100f !important;
+    background-color: #0f0e0d !important;
   }
   .bg-\[\#121215\] {
     background-color: #181615 !important;
@@ -39,9 +39,69 @@ body {
     border-color: rgba(44, 40, 38, 0.3) !important;
   }
   .rounded-xl {
-    border-radius: 6px !important;
+    border-radius: 4px !important;
   }
   .rounded-2xl {
-    border-radius: 8px !important;
+    border-radius: 6px !important;
+  }
+
+  /* Efeito Modernismo Tátil - Painéis e Botões */
+  .panel-tactile {
+    background-color: #181615;
+    border: 1.5px solid #2c2826;
+    border-radius: 4px;
+    box-shadow: 4px 4px 0px 0px #2c2826;
+  }
+
+  .btn-tactile {
+    border: 1.5px solid #2c2826;
+    border-radius: 4px;
+    background-color: #181615;
+    box-shadow: 4px 4px 0px 0px #2c2826;
+    transition: all 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .btn-tactile:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px 0px #2c2826;
+  }
+  .btn-tactile:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0px 0px 0px 0px #2c2826;
+  }
+
+  .btn-tactile-gold {
+    border: 1.5px solid #d4af37;
+    border-radius: 4px;
+    background-color: #d4af37;
+    color: #0f0e0d;
+    box-shadow: 4px 4px 0px 0px #2c2826;
+    transition: all 100ms cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 600;
+  }
+  .btn-tactile-gold:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px 0px #2c2826;
+  }
+  .btn-tactile-gold:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0px 0px 0px 0px #2c2826;
+  }
+
+  .btn-tactile-copper {
+    border: 1.5px solid #cf8a5f;
+    border-radius: 4px;
+    background-color: #cf8a5f;
+    color: #0f0e0d;
+    box-shadow: 4px 4px 0px 0px #2c2826;
+    transition: all 100ms cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 600;
+  }
+  .btn-tactile-copper:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0px 0px #2c2826;
+  }
+  .btn-tactile-copper:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0px 0px 0px 0px #2c2826;
   }
 }

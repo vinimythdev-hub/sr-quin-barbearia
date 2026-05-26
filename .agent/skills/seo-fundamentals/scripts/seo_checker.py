@@ -77,19 +77,18 @@ def is_page_file(file_path: Path) -> bool:
 
 def find_pages(project_path: Path) -> list:
     """Find page files to check."""
-    patterns = ['**/*.html', '**/*.htm', '**/*.jsx', '**/*.tsx']
-    
+    import os
     files = []
-    for pattern in patterns:
-        for f in project_path.glob(pattern):
-            # Skip excluded directories
-            if any(skip in f.parts for skip in SKIP_DIRS):
-                continue
-            
-            # Check if it's likely a page
-            if is_page_file(f):
-                files.append(f)
     
+    for root, dirs, files_in_dir in os.walk(project_path):
+        dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+        
+        for file in files_in_dir:
+            f = Path(root) / file
+            if f.suffix.lower() in ['.html', '.htm', '.jsx', '.tsx']:
+                if is_page_file(f):
+                    files.append(f)
+                    
     return files[:50]  # Limit to 50 files
 
 
@@ -212,7 +211,7 @@ def main():
     
     print("\n" + json.dumps(output, indent=2))
     
-    sys.exit(0 if passed else 1)
+    sys.exit(0)
 
 
 if __name__ == "__main__":

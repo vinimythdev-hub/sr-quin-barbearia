@@ -302,7 +302,7 @@ export default function ServicesPage() {
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.length === 0 ? (
             <div className="col-span-full bg-[#121215] border border-[#27272a] rounded-xl p-12 text-center text-slate-500 font-light text-sm">
-              Nenhum serviço cadastrado no catálogo. Clique em "Novo Serviço" para começar.
+              Nenhum serviço cadastrado no catálogo. Clique em &quot;Novo Serviço&quot; para começar.
             </div>
           ) : (
             services.map((service) => (

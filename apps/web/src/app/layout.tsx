@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`${plusJakartaSans.variable} ${cinzel.variable}`}>
-      <body className="font-sans antialiased text-slate-100 bg-[#11100f] min-h-screen">
+      <body className="font-sans antialiased text-slate-100 bg-brand-charcoal min-h-screen">
         {children}
       </body>
     </html>
