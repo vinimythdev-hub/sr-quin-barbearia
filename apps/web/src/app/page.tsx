@@ -201,7 +201,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-[#f3f4f6] relative flex flex-col">
+    <div className="min-h-screen bg-[#11100f] text-[#f3f4f6] relative flex flex-col">
       
       {/* Elemento de brilho ambiente dourado */}
       <div className="absolute top-0 right-0 w-[500px] h-[300px] bg-[#d4af37]/2 rounded-full blur-[120px] pointer-events-none" />
@@ -211,9 +211,8 @@ export default function HomePage() {
 
       {/* 2. Conteúdo Principal */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 sm:p-12 space-y-10">
-        
         {/* Banner de Boas-vindas */}
-        <section className="bg-gradient-to-r from-[#121215] via-[#161619] to-[#1e1a12] border border-[#27272a]/60 rounded-2xl p-8 sm:p-10 relative overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
+        <section className="bg-[#181615] border border-[#2c2826] rounded-md p-8 sm:p-10 relative overflow-hidden shadow-[0_20px_40px_rgba(0,0,0,0.3)]">
           <div className="absolute top-0 right-0 h-full w-1/3 bg-radial-gradient from-[#d4af37]/5 to-transparent pointer-events-none" />
           
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -228,9 +227,9 @@ export default function HomePage() {
                 O seu templo está aberto. O dashboard está conectado em tempo real à base de dados do Supabase.
               </p>
             </div>
-
+ 
             {/* Relógio Local de Rondônia */}
-            <div className="bg-[#0a0a0c]/80 border border-[#27272a] rounded-xl px-6 py-4 flex flex-col items-center justify-center min-w-[220px]">
+            <div className="bg-[#11100f] border border-[#2c2826] rounded-sm px-6 py-4 flex flex-col items-center justify-center min-w-[220px]">
               <span className="text-[9px] uppercase tracking-widest text-[#a1a1aa] font-mono">
                 Horário de Rondônia (UTC-4)
               </span>
@@ -253,7 +252,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             
             {/* Card 1: Faturamento */}
-            <div className="bg-[#121215] border border-[#27272a] rounded-xl p-6 space-y-4 hover:border-[#d4af37]/30 transition duration-300">
+            <div className="bg-[#181615] border border-[#2c2826] rounded-md p-6 space-y-4 hover:border-[#d4af37]/30 transition duration-300">
               <div className="flex justify-between items-center">
                 <span className="text-xs uppercase tracking-wider text-[#a1a1aa] font-medium">Faturamento Estimado</span>
                 <svg className="w-5 h-5 text-[#d4af37]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -268,9 +267,9 @@ export default function HomePage() {
                 <p className="text-[10px] text-green-400 mt-1">✓ Atualizado com base nos agendamentos</p>
               </div>
             </div>
-
+ 
             {/* Card 2: Agendamentos */}
-            <div className="bg-[#121215] border border-[#27272a] rounded-xl p-6 space-y-4 hover:border-[#d4af37]/30 transition duration-300">
+            <div className="bg-[#181615] border border-[#2c2826] rounded-md p-6 space-y-4 hover:border-[#d4af37]/30 transition duration-300">
               <div className="flex justify-between items-center">
                 <span className="text-xs uppercase tracking-wider text-[#a1a1aa] font-medium">Agendamentos Hoje</span>
                 <svg className="w-5 h-5 text-[#d4af37]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -285,9 +284,9 @@ export default function HomePage() {
                 <p className="text-[10px] text-[#d4af37] mt-1">{completedCount} concluídos</p>
               </div>
             </div>
-
+ 
             {/* Card 3: Barbeiros Ativos */}
-            <div className="bg-[#121215] border border-[#27272a] rounded-xl p-6 space-y-4 hover:border-[#d4af37]/30 transition duration-300">
+            <div className="bg-[#181615] border border-[#2c2826] rounded-md p-6 space-y-4 hover:border-[#d4af37]/30 transition duration-300">
               <div className="flex justify-between items-center">
                 <span className="text-xs uppercase tracking-wider text-[#a1a1aa] font-medium">Equipe em Serviço</span>
                 <svg className="w-5 h-5 text-[#d4af37]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -302,9 +301,9 @@ export default function HomePage() {
                 <p className="text-[10px] text-slate-400 mt-1">Barbeiros disponíveis para escala</p>
               </div>
             </div>
-
+ 
             {/* Card 4: Faltas */}
-            <div className="bg-[#121215] border border-[#27272a] rounded-xl p-6 space-y-4 hover:border-[#d4af37]/30 transition duration-300">
+            <div className="bg-[#181615] border border-[#2c2826] rounded-md p-6 space-y-4 hover:border-[#d4af37]/30 transition duration-300">
               <div className="flex justify-between items-center">
                 <span className="text-xs uppercase tracking-wider text-[#a1a1aa] font-medium">No-shows de Hoje</span>
                 <svg className="w-5 h-5 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -319,7 +318,7 @@ export default function HomePage() {
                 <p className="text-[10px] text-red-400 mt-1">Clientes que não compareceram</p>
               </div>
             </div>
-
+ 
           </div>
         </section>
 
@@ -331,7 +330,7 @@ export default function HomePage() {
             </h3>
             <button 
               onClick={fetchDashboardData}
-              className="text-xs border border-[#27272a] hover:border-[#d4af37]/40 text-[#a1a1aa] hover:text-white px-3 py-1.5 rounded-lg transition duration-200 flex items-center gap-1.5"
+              className="text-xs border border-[#2c2826] hover:border-[#d4af37]/40 text-[#a1a1aa] hover:text-white px-3 py-1.5 rounded-sm transition duration-200 flex items-center gap-1.5 bg-[#181615]"
             >
               <svg className="w-3.5 h-3.5 text-[#a1a1aa] group-hover:text-white transition duration-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
@@ -339,8 +338,8 @@ export default function HomePage() {
               Atualizar
             </button>
           </div>
-
-          <div className="bg-[#121215] border border-[#27272a]/70 rounded-xl overflow-hidden shadow-xl">
+ 
+          <div className="bg-[#181615] border border-[#2c2826] rounded-md overflow-hidden shadow-xl">
             {appointments.length === 0 ? (
               <div className="p-12 text-center text-slate-500 font-light text-sm">
                 Nenhum agendamento registrado para o dia de hoje.
@@ -349,7 +348,7 @@ export default function HomePage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-[#27272a] bg-[#18181b]/40 text-[10px] uppercase tracking-[0.15em] text-[#a1a1aa] font-mono">
+                    <tr className="border-b border-[#2c2826] bg-[#11100f] text-[10px] uppercase tracking-[0.15em] text-[#a1a1aa] font-mono">
                       <th className="py-4 px-6">Horário (Rondônia)</th>
                       <th className="py-4 px-6">Cliente</th>
                       <th className="py-4 px-6">Barbeiro</th>
@@ -359,7 +358,7 @@ export default function HomePage() {
                       <th className="py-4 px-6 text-center">Ações</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#27272a]/50 text-sm font-light">
+                  <tbody className="divide-y divide-[#2c2826]/60 text-sm font-light">
                     {appointments.map((app) => {
                       const startTimeLocal = formatToRondoniaTime(app.start_time).split(", ")[1];
                       
@@ -410,21 +409,21 @@ export default function HomePage() {
                                 <button
                                   onClick={() => handleUpdateStatus(app.id, 'completed')}
                                   disabled={actionLoadingId === app.id}
-                                  className="bg-green-600 hover:bg-green-700 disabled:bg-green-600/30 text-white px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wider uppercase transition"
+                                  className="bg-green-700 hover:bg-green-800 disabled:bg-green-700/30 text-white px-3 py-1.5 rounded-sm text-xs font-semibold tracking-wider uppercase transition"
                                 >
                                   {actionLoadingId === app.id ? "..." : "Concluir"}
                                 </button>
                                 <button
                                   onClick={() => handleUpdateStatus(app.id, 'no_show')}
                                   disabled={actionLoadingId === app.id}
-                                  className="bg-orange-600 hover:bg-orange-700 disabled:bg-orange-600/30 text-white px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wider uppercase transition"
+                                  className="bg-orange-700 hover:bg-orange-800 disabled:bg-orange-700/30 text-white px-3 py-1.5 rounded-sm text-xs font-semibold tracking-wider uppercase transition"
                                 >
                                   Falta
                                 </button>
                                 <button
                                   onClick={() => handleUpdateStatus(app.id, 'cancelled')}
                                   disabled={actionLoadingId === app.id}
-                                  className="bg-[#27272a] hover:bg-[#3f3f46] disabled:bg-[#27272a]/30 text-red-400 px-3 py-1.5 rounded-lg text-xs font-semibold tracking-wider uppercase transition"
+                                  className="bg-[#11100f] hover:bg-[#2c2826] border border-red-950 disabled:bg-[#11100f]/30 text-red-400 px-3 py-1.5 rounded-sm text-xs font-semibold tracking-wider uppercase transition"
                                 >
                                   Cancelar
                                 </button>
@@ -444,7 +443,7 @@ export default function HomePage() {
         </section>
 
         {/* Links de Atalhos Administrativos */}
-        <section className="bg-[#121215]/40 border border-[#27272a]/50 rounded-xl p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <section className="bg-[#181615] border border-[#2c2826] rounded-md p-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
             <h4 className="text-base font-semibold text-white">Pronto para começar a gerenciar?</h4>
             <p className="text-xs text-slate-400 font-light">Adicione novos serviços ao catálogo ou cadastre novos barbeiros e escalas de trabalho na equipe.</p>
@@ -452,13 +451,13 @@ export default function HomePage() {
           <div className="flex flex-wrap gap-4">
             <a 
               href="/admin/services" 
-              className="bg-transparent hover:bg-[#d4af37]/5 border border-[#d4af37]/40 hover:border-[#d4af37] text-[#d4af37] px-5 py-2.5 rounded-lg text-xs font-semibold tracking-widest transition duration-300"
+              className="bg-transparent hover:bg-[#d4af37]/5 border border-[#d4af37]/40 hover:border-[#d4af37] text-[#d4af37] px-5 py-2.5 rounded-sm text-xs font-semibold tracking-widest transition duration-300"
             >
               CADASTRAR SERVIÇOS
             </a>
             <a 
               href="/admin/barbers" 
-              className="bg-transparent hover:bg-[#d4af37]/5 border border-[#d4af37]/40 hover:border-[#d4af37] text-[#d4af37] px-5 py-2.5 rounded-lg text-xs font-semibold tracking-widest transition duration-300"
+              className="bg-transparent hover:bg-[#d4af37]/5 border border-[#d4af37]/40 hover:border-[#d4af37] text-[#d4af37] px-5 py-2.5 rounded-sm text-xs font-semibold tracking-widest transition duration-300"
             >
               CADASTRAR BARBEIROS
             </a>
@@ -468,7 +467,7 @@ export default function HomePage() {
       </main>
 
       {/* 3. Rodapé */}
-      <footer className="border-t border-[#27272a]/30 py-6 text-center text-[10px] text-slate-600 font-mono uppercase tracking-widest mt-auto">
+      <footer className="border-t border-[#2c2826] py-6 text-center text-[10px] text-slate-600 font-mono uppercase tracking-widest mt-auto">
         © 2026 Sr. Quin Barbearia • Desenvolvido com Vercel & Supabase
       </footer>
 

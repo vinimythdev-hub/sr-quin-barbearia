@@ -4,8 +4,8 @@
 
 :root {
   --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 10, 10, 12;
-  --background-end-rgb: 15, 15, 20;
+  --background-start-rgb: 17, 16, 15;
+  --background-end-rgb: 24, 22, 21;
 }
 
 body {
@@ -17,4 +17,31 @@ body {
     )
     rgb(var(--background-start-rgb));
   min-height: 100vh;
+}
+
+@layer utilities {
+  .bg-\[\#0a0a0c\] {
+    background-color: #11100f !important;
+  }
+  .bg-\[\#121215\] {
+    background-color: #181615 !important;
+  }
+  .border-\[\#27272a\] {
+    border-color: #2c2826 !important;
+  }
+  .border-\[\#27272a\]\/70 {
+    border-color: rgba(44, 40, 38, 0.7) !important;
+  }
+  .border-\[\#27272a\]\/50 {
+    border-color: rgba(44, 40, 38, 0.5) !important;
+  }
+  .border-\[\#27272a\]\/30 {
+    border-color: rgba(44, 40, 38, 0.3) !important;
+  }
+  .rounded-xl {
+    border-radius: 6px !important;
+  }
+  .rounded-2xl {
+    border-radius: 8px !important;
+  }
 }

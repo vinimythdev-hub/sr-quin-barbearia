@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Cinzel, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ 
+const cinzel = Cinzel({ 
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-cinzel",
 });
 
-const outfit = Outfit({ 
+const plusJakartaSans = Plus_Jakarta_Sans({ 
   subsets: ["latin"],
-  variable: "--font-outfit",
+  variable: "--font-plus-jakarta-sans",
 });
 
 export const metadata: Metadata = {
@@ -23,8 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${outfit.variable}`}>
-      <body className="font-sans antialiased text-slate-100 bg-[#0a0a0c] min-h-screen">
+    <html lang="pt-BR" className={`${plusJakartaSans.variable} ${cinzel.variable}`}>
+      <body className="font-sans antialiased text-slate-100 bg-[#11100f] min-h-screen">
         {children}
       </body>
     </html>

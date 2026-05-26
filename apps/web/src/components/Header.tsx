@@ -67,10 +67,10 @@ export default function Header({ activePage }: HeaderProps) {
 
   return (
     <>
-      <header className="border-b border-[#27272a]/50 bg-[#121215]/55 backdrop-blur-md sticky top-0 z-50 px-6 sm:px-12 py-5 flex items-center justify-between transition-all duration-300">
+      <header className="border-b border-[#2c2826] bg-[#11100f] sticky top-0 z-50 px-6 sm:px-12 py-5 flex items-center justify-between transition-all duration-300">
         {/* Logo e Info */}
         <a href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-full border border-[#d4af37]/30 flex items-center justify-center bg-[#0a0a0c] shadow-[0_0_15px_rgba(212,175,55,0.03)] group-hover:border-[#d4af37]/75 transition duration-300">
+          <div className="w-10 h-10 rounded-full border border-[#d4af37]/30 flex items-center justify-center bg-[#181615] shadow-[0_0_15px_rgba(212,175,55,0.03)] group-hover:border-[#d4af37]/75 transition duration-300">
             <span className="font-display text-lg font-bold text-[#d4af37] group-hover:scale-110 transition duration-300">Q</span>
           </div>
           <div className="flex flex-col">
@@ -123,7 +123,7 @@ export default function Header({ activePage }: HeaderProps) {
           {/* Botão de Menu Hambúrguer - MOBILE/TABLET */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden w-10 h-10 rounded-lg border border-[#27272a] bg-[#121215]/80 flex items-center justify-center text-[#f3f4f6] hover:text-[#d4af37] hover:border-[#d4af37]/45 transition duration-300"
+            className="lg:hidden w-10 h-10 rounded-sm border border-[#2c2826] bg-[#181615] flex items-center justify-center text-[#f3f4f6] hover:text-[#d4af37] hover:border-[#d4af37]/45 transition duration-300"
             aria-label="Abrir Menu"
           >
             {isMenuOpen ? (
@@ -141,7 +141,7 @@ export default function Header({ activePage }: HeaderProps) {
 
       {/* Menu Drawer Overlay - MOBILE */}
       {isMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-[#0a0a0c]/95 backdrop-blur-lg flex flex-col justify-between p-8 pt-24 animate-fade-in">
+        <div className="lg:hidden fixed inset-0 z-40 bg-[#11100f]/98 flex flex-col justify-between p-8 pt-24 animate-fade-in">
           {/* Elemento decorativo dourado */}
           <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-[#d4af37]/2 rounded-full blur-[90px] pointer-events-none" />
 

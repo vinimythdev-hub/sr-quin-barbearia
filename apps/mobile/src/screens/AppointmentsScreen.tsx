@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { formatToRondoniaTime } from '@barbearia/shared';
+import { FONT_DISPLAY, FONT_BODY, FONT_MONO, COLOR_BG_BASE, COLOR_BG_CARD, COLOR_BORDER, COLOR_GOLD } from '../lib/typography';
 
 interface AppointmentItem {
   id: string;
@@ -272,7 +273,7 @@ export default function AppointmentsScreen({ onBack }: AppointmentsScreenProps) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0a0a0c',
+    backgroundColor: COLOR_BG_BASE,
   },
   header: {
     flexDirection: 'row',
@@ -281,7 +282,7 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     paddingBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(39, 39, 42, 0.4)',
+    borderBottomColor: COLOR_BORDER,
   },
   headerBack: {
     position: 'absolute',
@@ -295,6 +296,7 @@ const styles = StyleSheet.create({
     color: '#a1a1aa',
     fontSize: 14,
     fontWeight: '500',
+    fontFamily: FONT_BODY,
   },
   headerTitle: {
     flex: 1,
@@ -304,11 +306,12 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
+    fontFamily: FONT_DISPLAY,
   },
   tabsContainer: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(39, 39, 42, 0.3)',
+    borderBottomColor: COLOR_BORDER,
   },
   tab: {
     flex: 1,
@@ -319,33 +322,35 @@ const styles = StyleSheet.create({
     borderBottomColor: 'transparent',
   },
   tabActive: {
-    borderBottomColor: '#d4af37',
+    borderBottomColor: COLOR_GOLD,
   },
   tabText: {
     fontSize: 11,
     color: '#71717a',
     fontWeight: '600',
     letterSpacing: 1,
+    fontFamily: FONT_BODY,
   },
   tabTextActive: {
-    color: '#d4af37',
+    color: COLOR_GOLD,
   },
   body: {
     flex: 1,
     padding: 24,
   },
   errorBanner: {
-    backgroundColor: 'rgba(127, 29, 29, 0.2)',
-    borderColor: 'rgba(185, 28, 28, 0.4)',
+    backgroundColor: 'rgba(127, 29, 29, 0.1)',
+    borderColor: 'rgba(185, 28, 28, 0.3)',
     borderWidth: 1,
     padding: 12,
-    borderRadius: 8,
+    borderRadius: 4,
     marginHorizontal: 24,
     marginTop: 16,
   },
   errorText: {
     color: '#f87171',
     fontSize: 12,
+    fontFamily: FONT_BODY,
   },
   emptyContainer: {
     flex: 1,
@@ -361,20 +366,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#ffffff',
+    fontFamily: FONT_DISPLAY,
   },
   emptyDesc: {
     fontSize: 12,
     color: '#71717a',
     textAlign: 'center',
     lineHeight: 18,
-    fontWeight: '300',
+    fontWeight: '400',
     paddingHorizontal: 24,
+    fontFamily: FONT_BODY,
   },
   card: {
-    backgroundColor: '#121215',
+    backgroundColor: COLOR_BG_CARD,
     borderWidth: 1,
-    borderColor: '#27272a',
-    borderRadius: 12,
+    borderColor: COLOR_BORDER,
+    borderRadius: 4,
     padding: 16,
     marginBottom: 16,
     gap: 14,
@@ -390,62 +397,68 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     flex: 1,
     marginRight: 12,
+    fontFamily: FONT_DISPLAY,
   },
   badge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 6,
+    borderRadius: 4,
     borderWidth: 1,
   },
   badgeActive: {
-    backgroundColor: 'rgba(212, 175, 55, 0.1)',
-    borderColor: 'rgba(212, 175, 55, 0.3)',
+    backgroundColor: 'rgba(212, 175, 55, 0.05)',
+    borderColor: 'rgba(212, 175, 55, 0.2)',
   },
   badgeCompleted: {
-    backgroundColor: 'rgba(20, 83, 45, 0.1)',
-    borderColor: 'rgba(34, 197, 94, 0.3)',
+    backgroundColor: 'rgba(20, 83, 45, 0.05)',
+    borderColor: 'rgba(34, 197, 94, 0.2)',
   },
   badgeCancelled: {
-    backgroundColor: 'rgba(127, 29, 29, 0.1)',
-    borderColor: 'rgba(239, 68, 68, 0.3)',
+    backgroundColor: 'rgba(127, 29, 29, 0.05)',
+    borderColor: 'rgba(239, 68, 68, 0.2)',
   },
   badgeNoShow: {
-    backgroundColor: 'rgba(249, 115, 22, 0.1)',
-    borderColor: 'rgba(249, 115, 22, 0.3)',
+    backgroundColor: 'rgba(249, 115, 22, 0.05)',
+    borderColor: 'rgba(249, 115, 22, 0.2)',
   },
   badgeHistory: {
-    backgroundColor: 'rgba(39, 39, 42, 0.2)',
-    borderColor: 'rgba(63, 63, 70, 0.4)',
+    backgroundColor: 'rgba(39, 39, 42, 0.1)',
+    borderColor: 'rgba(63, 63, 70, 0.2)',
   },
   badgeTextActive: {
-    color: '#d4af37',
+    color: COLOR_GOLD,
     fontSize: 10,
     fontWeight: '600',
+    fontFamily: FONT_MONO,
   },
   badgeTextCompleted: {
     color: '#4ade80',
     fontSize: 10,
     fontWeight: '600',
+    fontFamily: FONT_MONO,
   },
   badgeTextCancelled: {
     color: '#f87171',
     fontSize: 10,
     fontWeight: '600',
+    fontFamily: FONT_MONO,
   },
   badgeTextNoShow: {
     color: '#fdba74',
     fontSize: 10,
     fontWeight: '600',
+    fontFamily: FONT_MONO,
   },
   badgeTextHistory: {
     color: '#a1a1aa',
     fontSize: 10,
     fontWeight: '600',
+    fontFamily: FONT_MONO,
   },
   cardBody: {
     gap: 8,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(39, 39, 42, 0.3)',
+    borderTopColor: COLOR_BORDER,
     paddingTop: 12,
   },
   infoRow: {
@@ -456,24 +469,26 @@ const styles = StyleSheet.create({
   infoLabel: {
     fontSize: 12,
     color: '#71717a',
+    fontFamily: FONT_BODY,
   },
   infoValue: {
     fontSize: 13,
     color: '#ffffff',
     fontWeight: '500',
+    fontFamily: FONT_BODY,
   },
   infoPrice: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#d4af37',
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+    color: COLOR_GOLD,
+    fontFamily: FONT_MONO,
   },
   cancelBtn: {
     height: 38,
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-    backgroundColor: 'rgba(239, 68, 68, 0.03)',
-    borderRadius: 6,
+    borderColor: 'rgba(239, 68, 68, 0.2)',
+    backgroundColor: 'rgba(239, 68, 68, 0.02)',
+    borderRadius: 4,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 4,
@@ -483,5 +498,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     letterSpacing: 1,
+    fontFamily: FONT_BODY,
   },
 });
