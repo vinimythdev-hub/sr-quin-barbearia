@@ -9,6 +9,7 @@ import {
   FlatList,
   Platform,
   Image,
+  TextInput,
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { formatToRondoniaTime, RONDONIA_TIMEZONE } from '@barbearia/shared';
@@ -67,6 +68,29 @@ export default function BookingScreen({ onBack, onSuccess }: BookingScreenProps)
   const [selectedBarber, setSelectedBarber] = useState<BarberItem | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+
+  // Guest Mode State
+  const [userName, setUserName] = useState('');
+  const [userPhone, setUserPhone] = useState('');
+  const [showGuestForm, setShowGuestForm] = useState(false);
+  const [isUserAnonymous, setIsUserAnonymous] = useState(false);
+
+  // Check if current session is anonymous
+  useEffect(() => {
+    const checkUserType = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          setIsUserAnonymous(user.is_anonymous || false);
+          setUserName(user.user_metadata?.name || '');
+          setUserPhone(user.user_metadata?.phone || '');
+        }
+      } catch (err) {
+        console.error('Erro ao verificar tipo de usuário:', err);
+      }
+    };
+    checkUserType();
+  }, []);
 
   // Fetch Services (Step 1)
   useEffect(() => {
@@ -228,10 +252,26 @@ export default function BookingScreen({ onBack, onSuccess }: BookingScreenProps)
   // Submit Booking (Step 4)
   const handleConfirmBooking = async () => {
     if (!selectedService || !selectedBarber || !selectedDate || !selectedSlot) return;
+
+    if (showGuestForm) {
+      if (!userName.trim() || !userPhone.trim()) {
+        setErrorMessage('Por favor, preencha seu nome e telefone.');
+        return;
+      }
+    }
+
     setLoading(true);
     setErrorMessage(null);
 
     try {
+      // Se for um usuário anônimo no guest form, atualiza seus dados de contato primeiro
+      if (showGuestForm) {
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: { name: userName.trim(), phone: userPhone.trim() }
+        });
+        if (updateError) throw updateError;
+      }
+
       const year = selectedDate.getFullYear();
       const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
       const day = String(selectedDate.getDate()).padStart(2, '0');
@@ -364,6 +404,61 @@ export default function BookingScreen({ onBack, onSuccess }: BookingScreenProps)
   const renderStep3 = () => {
     const next7Days = getNext7Days();
 
+    if (showGuestForm) {
+      return (
+        <View style={styles.stepContainer}>
+          <Text style={styles.sectionTitle}>Identificação do Cliente</Text>
+          <Text style={styles.sectionSubtitle}>Preencha seus dados para receber o agendamento</Text>
+
+          <View style={styles.guestForm}>
+            {/* Campo Nome */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Seu Nome</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Ex: Carlos Silva"
+                placeholderTextColor="#52525b"
+                value={userName}
+                onChangeText={setUserName}
+                autoCapitalize="words"
+              />
+            </View>
+
+            {/* Campo Telefone */}
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>Celular / WhatsApp para contato</Text>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Ex: (69) 99999-9999"
+                placeholderTextColor="#52525b"
+                value={userPhone}
+                onChangeText={setUserPhone}
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
+
+          <View style={styles.stepFooterBtns}>
+            <TouchableOpacity style={styles.backBtn} onPress={() => setShowGuestForm(false)} activeOpacity={0.8}>
+              <Text style={styles.backBtnText}>VOLTAR</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.nextBtn, { flex: 1, marginTop: 0 }]}
+              onPress={handleConfirmBooking}
+              disabled={loading}
+              activeOpacity={0.8}
+            >
+              {loading ? (
+                <ActivityIndicator color="#0a0a0c" />
+              ) : (
+                <Text style={styles.nextBtnText}>CONFIRMAR AGENDAMENTO</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+
     return (
       <View style={styles.stepContainer}>
         <Text style={styles.sectionTitle}>Data e Horário</Text>
@@ -438,7 +533,13 @@ export default function BookingScreen({ onBack, onSuccess }: BookingScreenProps)
           {selectedSlot && (
             <TouchableOpacity
               style={[styles.nextBtn, { flex: 1, marginTop: 0 }]}
-              onPress={handleConfirmBooking}
+              onPress={() => {
+                if (isUserAnonymous && (!userName.trim() || !userPhone.trim())) {
+                  setShowGuestForm(true);
+                } else {
+                  handleConfirmBooking();
+                }
+              }}
               activeOpacity={0.8}
             >
               <Text style={styles.nextBtnText}>CONFIRMAR</Text>
@@ -870,5 +971,34 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#ffffff',
     fontWeight: '500',
+  },
+  guestForm: {
+    gap: 16,
+    marginBottom: 24,
+    backgroundColor: '#121215',
+    borderWidth: 1,
+    borderColor: '#27272a',
+    borderRadius: 12,
+    padding: 20,
+  },
+  inputGroup: {
+    gap: 6,
+  },
+  inputLabel: {
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    color: '#a1a1aa',
+    fontWeight: '500',
+  },
+  textInput: {
+    height: 48,
+    backgroundColor: '#0a0a0c',
+    borderWidth: 1,
+    borderColor: '#27272a',
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    color: '#f3f4f6',
+    fontSize: 14,
   },
 });

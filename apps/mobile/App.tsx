@@ -23,7 +23,17 @@ export default function App() {
     const getInitialSession = async () => {
       try {
         const { data: { session: currentSession } } = await supabase.auth.getSession();
-        setSession(currentSession);
+        if (currentSession) {
+          setSession(currentSession);
+        } else {
+          // Se não houver sessão ativa, realiza a autenticação anônima silenciosa
+          const { data: anonymousData, error: anonymousError } = await supabase.auth.signInAnonymously();
+          if (anonymousError) {
+            console.error('Erro ao autenticar anonimamente:', anonymousError);
+          } else if (anonymousData.session) {
+            setSession(anonymousData.session);
+          }
+        }
       } catch (err) {
         console.error('Erro ao obter sessão inicial:', err);
       } finally {
@@ -33,10 +43,21 @@ export default function App() {
 
     getInitialSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
       setSession(currentSession);
       if (!currentSession) {
         setCurrentScreen('dashboard');
+        // Se a sessão expirou ou o usuário deslogou, recria uma sessão anônima silenciosa
+        try {
+          const { data: anonymousData, error: anonymousError } = await supabase.auth.signInAnonymously();
+          if (anonymousError) {
+            console.error('Erro ao autenticar anonimamente no fallback:', anonymousError);
+          } else if (anonymousData.session) {
+            setSession(anonymousData.session);
+          }
+        } catch (err) {
+          console.error('Erro ao recuperar sessão anônima no fallback:', err);
+        }
       }
     });
 
@@ -69,16 +90,7 @@ export default function App() {
     );
   }
 
-  if (!session) {
-    return (
-      <>
-        <StatusBar style="light" />
-        <AuthScreen />
-      </>
-    );
-  }
-
-  const clientName = session.user.user_metadata?.name || 'Cliente';
+  const clientName = session?.user?.user_metadata?.name || 'Convidado';
   const currentLocalTime = formatToRondoniaTime(currentTime);
 
   // Renderizador de telas com base no estado ativo
@@ -108,9 +120,11 @@ export default function App() {
               <Text style={styles.clientName}>{clientName}</Text>
             </View>
 
-            <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
-              <Text style={styles.logoutBtnText}>Sair</Text>
-            </TouchableOpacity>
+            {session && !session.user.is_anonymous && (
+              <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout} activeOpacity={0.7}>
+                <Text style={styles.logoutBtnText}>Sair</Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           {/* Corpo Principal do Dashboard */}
