@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { supabase } from './src/lib/supabase';
 import { formatToRondoniaTime } from '@barbearia/shared';
@@ -14,9 +14,29 @@ export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [completedCutsCount, setCompletedCutsCount] = useState(0);
 
   // Controle de navegação por estado interno (Tabs / Stack leve e resiliente)
   const [currentScreen, setCurrentScreen] = useState<'dashboard' | 'booking' | 'appointments'>('dashboard');
+
+  // Função para buscar os agendamentos concluídos do cliente
+  const fetchCompletedCuts = async (userId: string) => {
+    try {
+      const { count, error } = await supabase
+        .from('appointments')
+        .select('*', { count: 'exact', head: true })
+        .eq('client_id', userId)
+        .eq('status', 'completed');
+      
+      if (error) {
+        console.error('Erro ao buscar cortes concluídos:', error);
+      } else if (count !== null) {
+        setCompletedCutsCount(count);
+      }
+    } catch (err) {
+      console.error('Erro na requisição de cortes concluídos:', err);
+    }
+  };
 
   // Listen to auth state changes and fetch initial session
   useEffect(() => {
@@ -65,6 +85,13 @@ export default function App() {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Busca cortes concluídos sempre que a sessão mudar ou navegar para o dashboard
+  useEffect(() => {
+    if (session?.user?.id && currentScreen === 'dashboard') {
+      fetchCompletedCuts(session.user.id);
+    }
+  }, [session, currentScreen]);
 
   // Update clock every 10 seconds
   useEffect(() => {
@@ -127,15 +154,65 @@ export default function App() {
             )}
           </View>
 
-          {/* Corpo Principal do Dashboard */}
-          <View style={styles.content}>
-
+          {/* Corpo Principal do Dashboard com Rolagem Elegante */}
+          <ScrollView style={styles.scrollView} contentContainerStyle={styles.contentContainer}>
             {/* Banner Decorativo */}
             <View style={styles.welcomeCard}>
               <Text style={styles.welcomeTitle}>Sua Agenda de Estilo</Text>
               <Text style={styles.welcomeDesc}>
                 Gerencie seus agendamentos e reserve seu horário exclusivo direto do seu smartphone.
               </Text>
+            </View>
+
+            {/* Cartão Fidelidade Digital Dinâmico */}
+            <View style={styles.loyaltyCard}>
+              <View style={styles.loyaltyHeader}>
+                <View style={styles.loyaltyTitleContainer}>
+                  <Feather name="award" size={18} color="#d4af37" />
+                  <Text style={styles.loyaltyTitle}>Cartão Fidelidade</Text>
+                </View>
+                <Text style={styles.loyaltySubtitle}>
+                  {completedCutsCount >= 10
+                    ? "Parabéns! Você tem corte cortesia disponível!"
+                    : `${completedCutsCount % 10}/10 selos para ganhar um corte cortesia`}
+                </Text>
+              </View>
+
+              <View style={styles.stampsGrid}>
+                {Array.from({ length: 10 }).map((_, index) => {
+                  const stampNumber = index + 1;
+                  const activeStamps = completedCutsCount % 10 === 0 && completedCutsCount > 0 ? 10 : completedCutsCount % 10;
+                  const isStamped = stampNumber <= activeStamps;
+
+                  return (
+                    <View
+                      key={index}
+                      style={[
+                        styles.stampSlot,
+                        isStamped ? styles.stampStamped : styles.stampEmpty
+                      ]}
+                    >
+                      {isStamped ? (
+                        <View style={styles.stampIconBg}>
+                          <Feather name="scissors" size={14} color="#d4af37" />
+                        </View>
+                      ) : (
+                        <Text style={styles.stampNumber}>{stampNumber}</Text>
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
+
+              {completedCutsCount >= 10 && (
+                <View style={styles.voucherContainer}>
+                  <Feather name="gift" size={18} color="#0a0a0c" />
+                  <View style={styles.voucherTextContainer}>
+                    <Text style={styles.voucherTitle}>Corte Cortesia Disponível!</Text>
+                    <Text style={styles.voucherDesc}>Apresente este cartão no caixa da barbearia para resgatar.</Text>
+                  </View>
+                </View>
+              )}
             </View>
 
             {/* Ação 1: Agendar Novo Horário */}
@@ -169,13 +246,13 @@ export default function App() {
               </View>
               <Text style={styles.actionArrow}>➔</Text>
             </TouchableOpacity>
-          </View>
 
-          {/* Relógio / Timezone de Porto Velho */}
-          <View style={styles.timeCard}>
-            <Text style={styles.timeLabel}>Horário Local de Rondônia (UTC-4):</Text>
-            <Text style={styles.timeText}>{currentLocalTime}</Text>
-          </View>
+            {/* Relógio / Timezone de Porto Velho */}
+            <View style={styles.timeCard}>
+              <Text style={styles.timeLabel}>Horário Local de Rondônia (UTC-4):</Text>
+              <Text style={styles.timeText}>{currentLocalTime}</Text>
+            </View>
+          </ScrollView>
 
           {/* Rodapé Art Déco */}
           <View style={styles.footer}>
@@ -243,11 +320,97 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  contentContainer: {
     padding: 24,
     gap: 16,
+    paddingBottom: 40,
+  },
+  loyaltyCard: {
+    backgroundColor: 'rgba(212, 175, 55, 0.02)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(212, 175, 55, 0.25)',
+    padding: 20,
+    marginBottom: 8,
+  },
+  loyaltyHeader: {
+    gap: 6,
+    marginBottom: 16,
+  },
+  loyaltyTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  loyaltyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#ffffff',
+    letterSpacing: 0.5,
+  },
+  loyaltySubtitle: {
+    fontSize: 12,
+    color: '#a1a1aa',
+    fontWeight: '300',
+  },
+  stampsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
+  stampSlot: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: 'center',
     justifyContent: 'center',
+  },
+  stampStamped: {
+    borderWidth: 1.5,
+    borderColor: '#d4af37',
+    backgroundColor: 'rgba(212, 175, 55, 0.1)',
+  },
+  stampEmpty: {
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: 'rgba(255, 255, 255, 0.15)',
+    backgroundColor: 'transparent',
+  },
+  stampIconBg: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stampNumber: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.3)',
+    fontWeight: '500',
+  },
+  voucherContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#d4af37',
+    borderRadius: 12,
+    padding: 14,
+    marginTop: 20,
+    gap: 12,
+  },
+  voucherTextContainer: {
+    flex: 1,
+    gap: 2,
+  },
+  voucherTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0a0a0c',
+  },
+  voucherDesc: {
+    fontSize: 11,
+    color: 'rgba(10, 10, 12, 0.8)',
+    fontWeight: '500',
   },
   welcomeCard: {
     backgroundColor: 'rgba(212, 175, 55, 0.03)',
